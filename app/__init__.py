@@ -17,7 +17,7 @@ from flask import (
 )
 
 from app.models import (
-    db, Patient, CanonicalMarker, MarkerAlias, LabReport, TestResult, Medication, Prescription
+    db, User, Patient, Doctor, DoctorPatientConsent, CanonicalMarker, MarkerAlias, LabReport, TestResult, Medication, Prescription
 )
 from app.normalizer import (
     calculate_derived_ratios,
@@ -80,7 +80,6 @@ def create_app(config_name=None):
             email = request.form.get("email", "").strip().lower()
             password = request.form.get("password", "")
 
-            from app.models import User
             user = User.query.filter_by(email=email).first()
 
             if user and user.check_password(password):
@@ -91,6 +90,15 @@ def create_app(config_name=None):
                 if user.role == "admin":
                     flash("Welcome to the System Administration Console.", "success")
                     return redirect(url_for("admin_page"))
+                
+                elif user.role == "doctor":
+                    doc = user.doctor or Doctor.query.filter_by(user_id=user.id).first()
+                    if not doc:
+                        doc = Doctor.query.first()
+                    session["doctor_id"] = doc.doctor_id if doc else "DOC-2026-401"
+                    session["doctor_name"] = doc.full_name if doc else "Doctor"
+                    flash(f"Welcome to the Clinical OPD Portal, {doc.full_name if doc else user.email}!", "success")
+                    return redirect(url_for("doctor_dashboard"))
 
                 # If patient user, tie to their patient profile
                 if user.patient:
@@ -99,7 +107,7 @@ def create_app(config_name=None):
                     demo = Patient.query.first()
                     session["chrono_id"] = demo.chrono_id if demo else "CHRN-2026-8491"
 
-                flash(f"Welcome back, {user.email}!", "success")
+                flash(f"Welcome back to your Health Vault, {user.email}!", "success")
                 return redirect(url_for("dashboard"))
             else:
                 flash("Invalid email or password. Please verify credentials.", "error")
@@ -109,48 +117,80 @@ def create_app(config_name=None):
     @app.route("/register", methods=["GET", "POST"])
     def register_page():
         if request.method == "POST":
+            role = request.form.get("role", "patient")
             full_name = request.form.get("full_name", "").strip()
             email = request.form.get("email", "").strip().lower()
             password = request.form.get("password", "")
-            dob_str = request.form.get("date_of_birth")
-            sex = request.form.get("biological_sex", "OTHER")
-            blood = request.form.get("blood_group")
 
-            from app.models import User
             if User.query.filter_by(email=email).first():
                 flash("An account with this email already exists. Please log in.", "error")
                 return redirect(url_for("login_page"))
 
             import random
-            random_num = random.randint(1000, 9999)
-            chrono_id = f"CHRN-2026-{random_num}"
+            if role == "doctor":
+                specialty = request.form.get("specialty", "Internal Medicine & General Physician")
+                reg_num = request.form.get("registration_number", "MCI-74921")
+                hospital = request.form.get("hospital_affiliation", "Apollo Clinical Hospital")
+                doc_id = f"DOC-2026-{random.randint(100, 999)}"
 
-            # Create User
-            new_user = User(email=email, role="patient")
-            new_user.set_password(password)
-            db.session.add(new_user)
-            db.session.flush()
+                new_user = User(email=email, role="doctor")
+                new_user.set_password(password)
+                db.session.add(new_user)
+                db.session.flush()
 
-            # Create Patient Profile
-            dob = datetime.strptime(dob_str, "%Y-%m-%d").date() if dob_str else date(1990, 1, 1)
-            new_patient = Patient(
-                user_id=new_user.id,
-                chrono_id=chrono_id,
-                full_name=full_name,
-                date_of_birth=dob,
-                biological_sex=sex,
-                blood_group=blood
-            )
-            db.session.add(new_patient)
-            db.session.commit()
+                new_doc = Doctor(
+                    user_id=new_user.id,
+                    doctor_id=doc_id,
+                    full_name=full_name,
+                    specialty=specialty,
+                    registration_number=reg_num,
+                    hospital_affiliation=hospital
+                )
+                db.session.add(new_doc)
+                db.session.commit()
 
-            session["user_id"] = new_user.id
-            session["user_email"] = new_user.email
-            session["user_role"] = new_user.role
-            session["chrono_id"] = chrono_id
+                session["user_id"] = new_user.id
+                session["user_email"] = new_user.email
+                session["user_role"] = new_user.role
+                session["doctor_id"] = doc_id
+                session["doctor_name"] = full_name
 
-            flash(f"Account successfully created! Assigned Universal Health ID: {chrono_id}", "success")
-            return redirect(url_for("dashboard"))
+                flash(f"Doctor account registered! Your Doctor ID is {doc_id}", "success")
+                return redirect(url_for("doctor_dashboard"))
+
+            else:
+                # Patient Registration
+                dob_str = request.form.get("date_of_birth")
+                sex = request.form.get("biological_sex", "OTHER")
+                blood = request.form.get("blood_group")
+
+                random_num = random.randint(1000, 9999)
+                chrono_id = f"CHRN-2026-{random_num}"
+
+                new_user = User(email=email, role="patient")
+                new_user.set_password(password)
+                db.session.add(new_user)
+                db.session.flush()
+
+                dob = datetime.strptime(dob_str, "%Y-%m-%d").date() if dob_str else date(1990, 1, 1)
+                new_patient = Patient(
+                    user_id=new_user.id,
+                    chrono_id=chrono_id,
+                    full_name=full_name,
+                    date_of_birth=dob,
+                    biological_sex=sex,
+                    blood_group=blood
+                )
+                db.session.add(new_patient)
+                db.session.commit()
+
+                session["user_id"] = new_user.id
+                session["user_email"] = new_user.email
+                session["user_role"] = new_user.role
+                session["chrono_id"] = chrono_id
+
+                flash(f"Account successfully created! Assigned Universal Health ID: {chrono_id}", "success")
+                return redirect(url_for("dashboard"))
 
         return render_template("register.html")
 
@@ -160,6 +200,170 @@ def create_app(config_name=None):
         flash("You have been signed out safely.", "success")
         return redirect(url_for("home_page"))
 
+    # -----------------------------------------------------------------------
+    # DOCTOR CLINICAL MODULE & CONSENT ENFORCEMENT
+    # -----------------------------------------------------------------------
+
+    @app.route("/doctor")
+    def doctor_dashboard():
+        if session.get("user_role") not in ["doctor", "admin"]:
+            flash("Doctor or Administrator clearance required. Please log in as a Doctor.", "error")
+            return redirect(url_for("login_page"))
+
+        doc = None
+        if session.get("user_id"):
+            doc = Doctor.query.filter_by(user_id=session.get("user_id")).first()
+        if not doc:
+            doc = Doctor.query.first()
+
+        if not doc:
+            # Self-heal demo doctor
+            doc_user = User(email="doctor@chronolab.com", role="doctor")
+            doc_user.set_password("Doctor@123")
+            db.session.add(doc_user)
+            db.session.flush()
+            doc = Doctor(
+                user_id=doc_user.id,
+                doctor_id="DOC-2026-401",
+                full_name="Dr. Arvind Sharma, MD",
+                specialty="Internal Medicine & Diabetology",
+                registration_number="MCI-74921",
+                hospital_affiliation="Apollo Clinical Hospital"
+            )
+            db.session.add(doc)
+            db.session.commit()
+
+        # Fetch authorized patients (Active Consent)
+        consents = DoctorPatientConsent.query.filter_by(doctor_id=doc.id, status="ACTIVE").all()
+        authorized_patient_ids = [c.patient_id for c in consents]
+        authorized_patients = Patient.query.filter(Patient.id.in_(authorized_patient_ids)).all() if authorized_patient_ids else []
+
+        searched_id = request.args.get("chrono_id", "").strip().upper()
+        active_patient = None
+        access_denied = False
+
+        if searched_id:
+            candidate = Patient.query.filter_by(chrono_id=searched_id).first()
+            if not candidate:
+                candidate = Patient.query.filter(Patient.full_name.ilike(f"%{searched_id}%")).first()
+
+            if candidate:
+                has_consent = DoctorPatientConsent.query.filter_by(doctor_id=doc.id, patient_id=candidate.id, status="ACTIVE").first()
+                if has_consent or session.get("user_role") == "admin":
+                    active_patient = candidate
+                else:
+                    access_denied = True
+            else:
+                flash(f"No patient found matching '{searched_id}'.", "error")
+        elif authorized_patients:
+            active_patient = authorized_patients[0]
+
+        patient_data = None
+        if active_patient:
+            results = (
+                TestResult.query
+                .filter_by(patient_id=active_patient.id)
+                .join(LabReport)
+                .order_by(LabReport.test_date.desc())
+                .all()
+            )
+            meds = Medication.query.filter_by(patient_id=active_patient.id).all()
+            rx_list = Prescription.query.filter_by(patient_id=active_patient.id).order_by(Prescription.encounter_date.desc()).all()
+            normalized_map = {r.canonical_marker.code: r.normalized_value for r in results}
+            derived_ratios = calculate_derived_ratios(normalized_map)
+
+            patient_data = {
+                "patient": active_patient,
+                "results": results,
+                "medications": meds,
+                "prescriptions": rx_list,
+                "derived_ratios": derived_ratios
+            }
+
+        return render_template(
+            "doctor.html",
+            doctor=doc,
+            authorized_patients=authorized_patients,
+            active_patient_data=patient_data,
+            searched_id=searched_id,
+            access_denied=access_denied
+        )
+
+    @app.route("/doctor/prescribe", methods=["POST"])
+    def doctor_prescribe():
+        if session.get("user_role") not in ["doctor", "admin"]:
+            flash("Unauthorized", "error")
+            return redirect(url_for("login_page"))
+
+        patient_id = request.form.get("patient_id")
+        drug_name = request.form.get("drug_name")
+        dosage = request.form.get("dosage")
+        frequency = request.form.get("frequency")
+        notes = request.form.get("notes")
+
+        new_med = Medication(
+            patient_id=patient_id,
+            drug_name=drug_name,
+            dosage=dosage,
+            frequency=frequency,
+            start_date=date.today(),
+            notes=notes
+        )
+        db.session.add(new_med)
+        db.session.commit()
+
+        pat = Patient.query.get(patient_id)
+        flash(f"Prescription for {drug_name} ({dosage}) added to patient's active regimen.", "success")
+        return redirect(url_for("doctor_dashboard", chrono_id=pat.chrono_id if pat else ""))
+
+    # -----------------------------------------------------------------------
+    # PATIENT CONSENT DELEGATION & MANAGEMENT
+    # -----------------------------------------------------------------------
+
+    @app.route("/patient/consent/grant", methods=["POST"])
+    def grant_doctor_consent():
+        chrono_id = session.get("chrono_id", "CHRN-2026-8491")
+        patient = Patient.query.filter_by(chrono_id=chrono_id).first()
+        doctor_query = request.form.get("doctor_id_or_email", "").strip()
+
+        doc = Doctor.query.filter(
+            (Doctor.doctor_id == doctor_query.upper()) |
+            (Doctor.full_name.ilike(f"%{doctor_query}%"))
+        ).first()
+
+        if not doc:
+            flash(f"No certified doctor found matching '{doctor_query}'. Try entering 'DOC-2026-401'.", "error")
+            return redirect(url_for("dashboard"))
+
+        consent = DoctorPatientConsent.query.filter_by(patient_id=patient.id, doctor_id=doc.id).first()
+        if consent:
+            consent.status = "ACTIVE"
+            consent.granted_at = datetime.utcnow()
+        else:
+            consent = DoctorPatientConsent(
+                patient_id=patient.id,
+                doctor_id=doc.id,
+                status="ACTIVE"
+            )
+            db.session.add(consent)
+
+        db.session.commit()
+        flash(f"Access granted! Dr. {doc.full_name} ({doc.doctor_id}) can now view your records in OPD.", "success")
+        return redirect(url_for("dashboard"))
+
+    @app.route("/patient/consent/revoke/<int:consent_id>", methods=["POST"])
+    def revoke_doctor_consent(consent_id):
+        consent = DoctorPatientConsent.query.get_or_404(consent_id)
+        consent.status = "REVOKED"
+        consent.revoked_at = datetime.utcnow()
+        db.session.commit()
+        flash(f"Access revoked for Dr. {consent.doctor.full_name}. They can no longer view your medical records.", "success")
+        return redirect(url_for("dashboard"))
+
+    # -----------------------------------------------------------------------
+    # SYSTEM ADMIN MODULE
+    # -----------------------------------------------------------------------
+
     @app.route("/admin")
     def admin_page():
         # Check admin authorization
@@ -167,17 +371,41 @@ def create_app(config_name=None):
             flash("Administrator clearance required. Please log in with admin credentials.", "error")
             return redirect(url_for("login_page"))
 
+        users = User.query.order_by(User.created_at.desc()).all()
+        doctors = Doctor.query.all()
         patients = Patient.query.order_by(Patient.created_at.desc()).all()
         recent_reports = LabReport.query.order_by(LabReport.uploaded_at.desc()).limit(15).all()
 
         stats = {
+            "user_count": User.query.count(),
+            "doctor_count": Doctor.query.count(),
             "patient_count": Patient.query.count(),
             "report_count": LabReport.query.count(),
             "test_result_count": TestResult.query.count(),
             "prescription_count": Prescription.query.count()
         }
 
-        return render_template("admin.html", patients=patients, recent_reports=recent_reports, stats=stats)
+        return render_template(
+            "admin.html", 
+            users=users, 
+            doctors=doctors, 
+            patients=patients, 
+            recent_reports=recent_reports, 
+            stats=stats
+        )
+
+    @app.route("/admin/toggle-user-role/<int:user_id>", methods=["POST"])
+    def toggle_user_role(user_id):
+        if session.get("user_role") != "admin":
+            flash("Unauthorized", "error")
+            return redirect(url_for("login_page"))
+
+        target_user = User.query.get_or_404(user_id)
+        new_role = request.form.get("role", "patient")
+        target_user.role = new_role
+        db.session.commit()
+        flash(f"Role for {target_user.email} updated to {new_role.upper()}.", "success")
+        return redirect(url_for("admin_page"))
 
     @app.route("/admin/set-patient/<int:patient_id>")
     def set_active_patient(patient_id):
@@ -294,6 +522,10 @@ def create_app(config_name=None):
                     "spanGaps": True
                 })
 
+        # 6. Fetch Doctor Consents & Certified Doctors for Consent Management
+        consents = DoctorPatientConsent.query.filter_by(patient_id=patient.id).all()
+        all_doctors = Doctor.query.all()
+
         return render_template(
             "dashboard.html",
             patient=patient,
@@ -302,7 +534,9 @@ def create_app(config_name=None):
             derived_ratios=derived_ratios,
             prescription=latest_rx,
             doctor_questions=doctor_questions,
-            chart_json=json.dumps(chart_data)
+            chart_json=json.dumps(chart_data),
+            consents=consents,
+            all_doctors=all_doctors
         )
 
     @app.route("/upload")

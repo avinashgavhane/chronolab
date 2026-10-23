@@ -1,74 +1,143 @@
 {% extends "base.html" %}
 
-{% block title %}Register Patient Account | ChronoLab{% endblock %}
+{% block title %}Register Account | ChronoLab{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto py-8">
 
     <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
         <div class="text-center space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl mx-auto shadow-inner">
+            <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-xl mx-auto shadow-inner">
                 📋
             </div>
-            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Create Health Vault</h1>
-            <p class="text-xs text-slate-500">Your profile will be assigned an anonymous Universal Health ID (ChronoID).</p>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Create Your Account</h1>
+            <p class="text-xs text-slate-500">Register as a Patient to track your health or as a Doctor for clinical OPD.</p>
         </div>
 
         <form action="{{ url_for('register_page') }}" method="POST" class="space-y-4">
+            
+            <!-- Account Role Selection Tabs -->
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Full Legal Name</label>
-                <input type="text" name="full_name" required placeholder="e.g. Aditi Sharma" class="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50/50">
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Account Role</label>
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
+                    <button type="button" id="tab-patient" onclick="setRole('patient')" 
+                            class="py-2 text-xs font-bold rounded-xl bg-white shadow-sm text-slate-900 transition text-center">
+                        👤 Patient
+                    </button>
+                    <button type="button" id="tab-doctor" onclick="setRole('doctor')" 
+                            class="py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition text-center">
+                        🩺 Doctor
+                    </button>
+                </div>
+                <input type="hidden" name="role" id="role-input" value="patient">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" id="name-label">Full Legal Name</label>
+                <input type="text" name="full_name" required placeholder="e.g. Aditi Sharma" class="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-                <input type="email" name="email" required placeholder="aditi@example.com" class="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50/50">
+                <input type="email" name="email" required placeholder="user@example.com" class="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-                <input type="password" name="password" required placeholder="Minimum 6 characters" class="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50/50">
+                <input type="password" name="password" required placeholder="Minimum 6 characters" class="w-full text-xs border border-slate-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-slate-900 bg-slate-50/50">
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Date of Birth</label>
-                    <input type="date" name="date_of_birth" required class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+            <!-- Patient-Specific Fields -->
+            <div id="patient-fields" class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Biological Sex</label>
+                        <select name="biological_sex" class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Biological Sex</label>
-                    <select name="biological_sex" class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
-                        <option value="MALE">Male</option>
-                        <option value="FEMALE">Female</option>
-                        <option value="OTHER">Other</option>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Blood Group (Optional)</label>
+                    <select name="blood_group" class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
                     </select>
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Blood Group (Optional)</label>
-                <select name="blood_group" class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                </select>
+            <!-- Doctor-Specific Fields -->
+            <div id="doctor-fields" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Medical Specialty</label>
+                    <input type="text" name="specialty" placeholder="e.g. Diabetology & Internal Medicine" 
+                           class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Registration / License Number</label>
+                    <input type="text" name="registration_number" placeholder="e.g. MCI-74921" 
+                           class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Hospital / Clinic Affiliation</label>
+                    <input type="text" name="hospital_affiliation" placeholder="e.g. Apollo Clinical Hospital" 
+                           class="w-full text-xs border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                </div>
             </div>
 
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md shadow-emerald-500/20 active:scale-95">
-                Generate ChronoID & Create Vault
+            <button type="submit" id="submit-btn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition shadow-md shadow-slate-900/10 active:scale-95">
+                Register Patient Health Vault
             </button>
         </form>
 
         <div class="text-center pt-2 border-t border-slate-100 text-xs text-slate-500">
             Already registered? 
-            <a href="{{ url_for('login_page') }}" class="font-bold text-brand-600 hover:underline">Log in here</a>
+            <a href="{{ url_for('login_page') }}" class="font-bold text-sky-700 hover:underline">Log in here</a>
         </div>
     </div>
 
 </div>
+
+<script>
+    function setRole(role) {
+        document.getElementById('role-input').value = role;
+        const patTab = document.getElementById('tab-patient');
+        const docTab = document.getElementById('tab-doctor');
+        const patFields = document.getElementById('patient-fields');
+        const docFields = document.getElementById('doctor-fields');
+        const submitBtn = document.getElementById('submit-btn');
+        const nameLabel = document.getElementById('name-label');
+
+        if (role === 'doctor') {
+            docTab.className = 'py-2 text-xs font-bold rounded-xl bg-white shadow-sm text-sky-800 transition text-center';
+            patTab.className = 'py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition text-center';
+            patFields.classList.add('hidden');
+            docFields.classList.remove('hidden');
+            nameLabel.innerText = 'Doctor Full Name & Title (e.g. Dr. Jane Doe, MD)';
+            submitBtn.innerText = 'Register Doctor OPD Account';
+            submitBtn.className = 'w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-md shadow-sky-600/20 active:scale-95';
+        } else {
+            patTab.className = 'py-2 text-xs font-bold rounded-xl bg-white shadow-sm text-slate-900 transition text-center';
+            docTab.className = 'py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition text-center';
+            patFields.classList.remove('hidden');
+            docFields.classList.add('hidden');
+            nameLabel.innerText = 'Full Legal Name';
+            submitBtn.innerText = 'Register Patient Health Vault';
+            submitBtn.className = 'w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition shadow-md shadow-slate-900/10 active:scale-95';
+        }
+    }
+</script>
 {% endblock %}

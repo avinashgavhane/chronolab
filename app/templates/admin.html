@@ -22,27 +22,98 @@
         </div>
     </div>
 
-    <!-- METRICS GRID (4 Stats Cards) -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- METRICS GRID (5 Stats Cards) -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Registered Patients</span>
-            <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ stats.patient_count }}</div>
-            <span class="text-[10px] text-emerald-600 font-bold">&bull; Active Vaults</span>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Users</span>
+            <div class="text-2xl font-extrabold text-slate-900 mt-1">{{ stats.user_count }}</div>
+            <span class="text-[10px] text-slate-500 font-bold">&bull; Registered Accounts</span>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Processed Lab Reports</span>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Certified Doctors</span>
+            <div class="text-2xl font-extrabold text-sky-600 mt-1">{{ stats.doctor_count }}</div>
+            <span class="text-[10px] text-sky-600 font-bold">&bull; OPD Clinicians</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Patient Vaults</span>
+            <div class="text-2xl font-extrabold text-emerald-600 mt-1">{{ stats.patient_count }}</div>
+            <span class="text-[10px] text-emerald-600 font-bold">&bull; Active ChronoIDs</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Lab Reports</span>
             <div class="text-2xl font-extrabold text-brand-600 mt-1">{{ stats.report_count }}</div>
-            <span class="text-[10px] text-brand-600 font-bold">&bull; Multi-Lab PDFs/Scans</span>
+            <span class="text-[10px] text-brand-600 font-bold">&bull; Multi-Lab Ingestion</span>
         </div>
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Normalized Test Points</span>
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Test Data Points</span>
             <div class="text-2xl font-extrabold text-purple-600 mt-1">{{ stats.test_result_count }}</div>
-            <span class="text-[10px] text-purple-600 font-bold">&bull; Time-Series Entries</span>
+            <span class="text-[10px] text-purple-600 font-bold">&bull; Aligned Biomarkers</span>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Prescriptions Logged</span>
-            <div class="text-2xl font-extrabold text-amber-600 mt-1">{{ stats.prescription_count }}</div>
-            <span class="text-[10px] text-amber-600 font-bold">&bull; Handwriting Fallbacks Active</span>
+    </div>
+
+    <!-- TABLE 0: USER ACCESS & ROLE MANAGEMENT -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+                <h2 class="text-lg font-bold text-slate-900">User Access &amp; Role Management</h2>
+                <p class="text-xs text-slate-500">Manage permissions across Patient, Doctor, and Administrator roles.</p>
+            </div>
+            <span class="text-xs font-mono bg-purple-50 text-purple-700 px-3 py-1 rounded-xl font-bold">{{ users|length }} Total Users</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="text-slate-400 font-semibold border-b border-slate-100">
+                        <th class="pb-3">User Email</th>
+                        <th class="pb-3">Current Role</th>
+                        <th class="pb-3">Assigned ID</th>
+                        <th class="pb-3">Account Status</th>
+                        <th class="pb-3 text-right">Change Role</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium">
+                    {% for u in users %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3 font-bold text-slate-900">{{ u.email }}</td>
+                        <td class="py-3">
+                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider
+                                {% if u.role == 'doctor' %}bg-sky-100 text-sky-800 border border-sky-200
+                                {% elif u.role == 'admin' %}bg-purple-100 text-purple-800 border border-purple-200
+                                {% else %}bg-emerald-100 text-emerald-800 border border-emerald-200{% endif %}">
+                                {{ u.role }}
+                            </span>
+                        </td>
+                        <td class="py-3 font-mono text-slate-600">
+                            {% if u.doctor %}
+                                <span class="text-sky-700 font-bold">{{ u.doctor.doctor_id }}</span>
+                            {% elif u.patient %}
+                                <span class="text-emerald-700 font-bold">{{ u.patient.chrono_id }}</span>
+                            {% else %}
+                                <span class="text-slate-400 font-normal">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] text-emerald-600 font-semibold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                            </span>
+                        </td>
+                        <td class="py-3 text-right">
+                            <form action="{{ url_for('toggle_user_role', user_id=u.id) }}" method="POST" class="inline-flex items-center gap-1.5">
+                                <select name="role" class="text-[11px] border border-slate-200 rounded-lg px-2 py-1 bg-slate-50 focus:outline-none">
+                                    <option value="patient" {% if u.role == 'patient' %}selected{% endif %}>Patient</option>
+                                    <option value="doctor" {% if u.role == 'doctor' %}selected{% endif %}>Doctor</option>
+                                    <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                <button type="submit" class="text-[10px] font-bold bg-slate-900 text-white px-2.5 py-1 rounded-lg hover:bg-slate-800 transition">
+                                    Save
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 

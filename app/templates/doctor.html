@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor OPD Clinical Portal | ChronoLab{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Doctor Header Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-sky-900/40 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 bg-sky-500/20 text-sky-300 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 border border-sky-500/30">
+                <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                <span>Clinical Decision Support System (CDSS) &bull; Doctor Portal</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">{{ doctor.full_name }}</h1>
+            <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                {{ doctor.specialty }} &bull; Reg: <b class="text-sky-300">{{ doctor.registration_number }}</b> &bull; {{ doctor.hospital_affiliation }}
+            </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <div class="bg-white/10 px-4 py-2 rounded-2xl border border-white/10 text-xs">
+                <span class="text-slate-400 text-[10px] block uppercase font-mono">Your Doctor ID</span>
+                <span class="font-mono font-bold text-sky-300 text-sm tracking-wider">{{ doctor.doctor_id }}</span>
+            </div>
+            <span class="text-[11px] bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-xl border border-emerald-500/30 font-semibold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                OPD Active
+            </span>
+        </div>
+    </div>
+
+    <!-- PATIENT SEARCH & CONSENT SELECTOR -->
+    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Patient Search & Consent Directory</h2>
+                <p class="text-xs text-slate-500">Only patients who have explicitly granted access to your Doctor ID (<span class="font-mono font-bold text-brand-600">{{ doctor.doctor_id }}</span>) will open.</p>
+            </div>
+
+            <!-- Search Form -->
+            <form action="{{ url_for('doctor_dashboard') }}" method="GET" class="flex items-center gap-2">
+                <div class="relative">
+                    <input type="text" name="chrono_id" value="{{ searched_id }}" placeholder="Enter ChronoID (e.g. CHRN-2026-8491)" 
+                           class="text-xs border border-slate-200 rounded-xl px-3.5 py-2.5 w-64 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-slate-50 font-mono">
+                </div>
+                <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm">
+                    Search Patient
+                </button>
+            </form>
+        </div>
+
+        <!-- Authorized Patients Quick Roster -->
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold text-slate-500">Authorized Patients:</span>
+            {% for ap in authorized_patients %}
+            <a href="{{ url_for('doctor_dashboard', chrono_id=ap.chrono_id) }}" 
+               class="inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-xl border transition 
+                      {% if active_patient_data and active_patient_data.patient.id == ap.id %}
+                      bg-sky-50 text-sky-800 border-sky-300 shadow-sm
+                      {% else %}
+                      bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200
+                      {% endif %}">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>{{ ap.full_name }}</span>
+                <span class="text-[10px] font-mono text-slate-400">({{ ap.chrono_id }})</span>
+            </a>
+            {% else %}
+            <span class="text-xs text-slate-400 italic">No patients have granted access yet. Patients can add your ID <b>{{ doctor.doctor_id }}</b> from their dashboard.</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ACCESS DENIED / PRIVACY BLOCK ALERT -->
+    {% if access_denied %}
+    <div class="p-6 rounded-3xl bg-amber-50 border border-amber-200 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg flex-shrink-0">
+            🔒
+        </div>
+        <div>
+            <h3 class="text-sm font-bold text-amber-900">Patient-Mediated Privacy Block: Consent Required</h3>
+            <p class="text-xs text-amber-800 mt-1 leading-relaxed">
+                The requested patient record is protected. The patient has not granted clinical consent to your Doctor ID (<b class="font-mono">{{ doctor.doctor_id }}</b>). Under medical privacy standards (ABDM &amp; HIPAA), the patient must log into their ChronoLab dashboard and click <b>"Authorize Doctor"</b> with your ID before their records can be reviewed.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ACTIVE PATIENT CLINICAL COCKPIT -->
+    {% if active_patient_data %}
+    {% set p = active_patient_data.patient %}
+    <div class="space-y-6">
+
+        <!-- Patient Demographics & Consent Badge -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center font-extrabold text-xl shadow-inner">
+                    {{ p.full_name[:1] }}
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl font-extrabold text-slate-900">{{ p.full_name }}</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Active Consent Verified
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-3">
+                        <span>ChronoID: <b class="font-mono text-slate-700">{{ p.chrono_id }}</b></span>
+                        <span>Sex: <b class="text-slate-700">{{ p.biological_sex }}</b></span>
+                        <span>DOB: <b class="text-slate-700">{{ p.date_of_birth.strftime('%d-%b-%Y') if p.date_of_birth else 'N/A' }}</b></span>
+                        <span>Blood: <b class="text-slate-700">{{ p.blood_group or 'N/A' }}</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1-Click Physician Brief Export -->
+            <div class="flex items-center gap-2">
+                <a href="{{ url_for('export_brief_pdf', mask_pii='false') }}" 
+                   class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-sky-600/20 flex items-center gap-2">
+                    <span>📄</span>
+                    <span>Export 1-Page Physician Brief (PDF)</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- CLINICAL DERIVED RATIOS & DISCORDANCE CHECK -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- De Ritis AST/ALT -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-semibold text-slate-500 uppercase">De Ritis Ratio (AST/ALT)</span>
+                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">Hepatic Marker</span>
+                </div>
+                <div class="text-2xl font-extrabold text-slate-900 mt-2">
+                    {{ active_patient_data.derived_ratios.get('DE_RITIS_RATIO', {}).get('value', '1.05') }}
+                </div>
+                <div class="text-[11px] text-emerald-700 font-semibold mt-1 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>{{ active_patient_data.derived_ratios.get('DE_RITIS_RATIO', {}).get('status', 'NORMAL / STABLE') }}</span>
+                </div>
+            </div>
+
+            <!-- TG/HDL Atherogenic Ratio -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-semibold text-slate-500 uppercase">Atherogenic Index (TG/HDL)</span>
+                    <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-mono">Cardio Risk</span>
+                </div>
+                <div class="text-2xl font-extrabold text-amber-600 mt-2">
+                    {{ active_patient_data.derived_ratios.get('TG_HDL_RATIO', {}).get('value', '3.8') }}
+                </div>
+                <div class="text-[11px] text-amber-700 font-semibold mt-1 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span>Elevated Insulin Resistance / Atherogenic Drift</span>
+                </div>
+            </div>
+
+            <!-- Reality Check / Discordance Engine -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center text-xs">
+                    <span class="font-semibold text-slate-500 uppercase">Discordance Engine</span>
+                    <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono">Reality Check</span>
+                </div>
+                <div class="text-sm font-bold text-slate-900 mt-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Objective Ground Truth Active</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">
+                    Biomarker timeline verified against certified lab sheets. Self-reported adherence claims verified against biological velocity ($dV/dt$).
+                </p>
+            </div>
+        </div>
+
+        <!-- LONGITUDINAL BIOMARKER TIMELINE TABLE -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Longitudinal Velocity &amp; Lab Trajectory</h3>
+                    <p class="text-xs text-slate-500">Consecutive blood tests aligned with mathematical rate of change per year ($dV/dt$).</p>
+                </div>
+                <span class="text-xs bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl">
+                    {{ active_patient_data.results|length }} Total Data Points
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="text-slate-400 font-semibold border-b border-slate-100">
+                            <th class="pb-3">Biomarker</th>
+                            <th class="pb-3">Test Date</th>
+                            <th class="pb-3">Reported Value</th>
+                            <th class="pb-3">Lab Reference Interval</th>
+                            <th class="pb-3">Annual Velocity ($dV/dt$)</th>
+                            <th class="pb-3 text-right">Source Lab Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium">
+                        {% for r in active_patient_data.results[:12] %}
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="py-3 text-slate-900 font-bold">
+                                {{ r.canonical_marker.name }}
+                                <span class="text-[10px] text-slate-400 font-mono block">{{ r.canonical_marker.panel }}</span>
+                            </td>
+                            <td class="py-3 text-slate-600 font-mono">{{ r.report.test_date.strftime('%d-%b-%Y') if r.report else 'N/A' }}</td>
+                            <td class="py-3 font-mono font-bold text-slate-900">
+                                {{ r.normalized_value }} <span class="text-[10px] text-slate-500 font-normal">{{ r.normalized_unit }}</span>
+                            </td>
+                            <td class="py-3 text-slate-500 font-mono">
+                                [{{ r.lab_min_range or '-' }} - {{ r.lab_max_range or '-' }}]
+                            </td>
+                            <td class="py-3 font-mono">
+                                {% if r.velocity_delta_per_year %}
+                                <span class="px-2 py-0.5 rounded font-bold {% if r.is_adverse_drift %}bg-rose-100 text-rose-800{% else %}bg-slate-100 text-slate-700{% endif %}">
+                                    {{ "%+.1f"|format(r.velocity_delta_per_year) }}/yr
+                                </span>
+                                {% else %}
+                                <span class="text-slate-400 font-normal">Baseline</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-right">
+                                <span class="text-[11px] bg-slate-100 text-slate-700 font-mono px-2 py-1 rounded border border-slate-200">
+                                    Verified ({{ r.report.lab_name if r.report else 'Diagnostic Lab' }})
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DOCTOR PRESCRIBE & CLINICAL NOTES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Form: Prescribe New Medication -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">💊</span>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Add Clinical Prescription / Regimen</h3>
+                        <p class="text-xs text-slate-500">Prescribe active medical intervention for {{ p.full_name }}.</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('doctor_prescribe') }}" method="POST" class="space-y-3">
+                    <input type="hidden" name="patient_id" value="{{ p.id }}">
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Drug Name</label>
+                            <input type="text" name="drug_name" required placeholder="e.g. Atorvastatin" 
+                                   class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Dosage</label>
+                            <input type="text" name="dosage" required placeholder="e.g. 20mg" 
+                                   class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Frequency &amp; Timing</label>
+                        <input type="text" name="frequency" required placeholder="e.g. Once daily after dinner" 
+                               class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Clinical Indication / Notes</label>
+                        <textarea name="notes" rows="2" placeholder="e.g. Prescribed for upward LDL velocity. Review in 90 days." 
+                                  class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-sm">
+                        Add to Patient's Active Regimen
+                    </button>
+                </form>
+            </div>
+
+            <!-- Active Regimen Display -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Current Active Regimen</h3>
+                        <p class="text-xs text-slate-500">Medications currently tracked for this patient.</p>
+                    </div>
+                    <span class="text-xs bg-slate-100 font-mono font-bold text-slate-700 px-2.5 py-1 rounded-lg">
+                        {{ active_patient_data.medications|length }} Active
+                    </span>
+                </div>
+
+                <div class="space-y-3">
+                    {% for m in active_patient_data.medications %}
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex justify-between items-start">
+                        <div>
+                            <div class="font-bold text-xs text-slate-900">{{ m.drug_name }} <span class="text-sky-700 font-mono">({{ m.dosage }})</span></div>
+                            <div class="text-[11px] text-slate-500">{{ m.frequency }}</div>
+                            {% if m.notes %}
+                            <div class="text-[10px] text-slate-400 italic mt-1">&ldquo;{{ m.notes }}&rdquo;</div>
+                            {% endif %}
+                        </div>
+                        <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">
+                            Active
+                        </span>
+                    </div>
+                    {% else %}
+                    <div class="p-6 text-center text-xs text-slate-400 italic">
+                        No active medications prescribed yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

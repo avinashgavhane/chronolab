@@ -24,18 +24,47 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default="patient")  # 'patient' or 'admin'
+    role = db.Column(db.String(20), default="patient")  # 'patient', 'doctor', or 'admin'
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # 1-to-1 linkage with patient profile
+    # 1-to-1 linkage with patient profile (if patient)
     patient = db.relationship("Patient", backref="user", uselist=False, cascade="all, delete-orphan")
+    # 1-to-1 linkage with doctor profile (if doctor)
+    doctor = db.relationship("Doctor", backref="user", uselist=False, cascade="all, delete-orphan")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class Doctor(db.Model):
+    __tablename__ = "doctors"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    doctor_id = db.Column(db.String(30), unique=True, nullable=False, index=True)  # e.g., 'DOC-2026-401'
+    full_name = db.Column(db.String(100), nullable=False)
+    specialty = db.Column(db.String(100), default="Internal Medicine / General Physician")
+    registration_number = db.Column(db.String(50), default="MCI-74921")
+    hospital_affiliation = db.Column(db.String(120), default="Apollo Clinical Hospital")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Consents granted to this doctor
+    consents = db.relationship("DoctorPatientConsent", backref="doctor", cascade="all, delete-orphan", lazy="dynamic")
+
+
+class DoctorPatientConsent(db.Model):
+    __tablename__ = "doctor_patient_consents"
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey("doctors.id", ondelete="CASCADE"), nullable=False)
+    status = db.Column(db.String(20), default="ACTIVE")  # 'ACTIVE', 'REVOKED'
+    granted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    revoked_at = db.Column(db.DateTime, nullable=True)
 
 
 class Patient(db.Model):
@@ -55,6 +84,7 @@ class Patient(db.Model):
     test_results = db.relationship("TestResult", backref="patient", cascade="all, delete-orphan", lazy="dynamic")
     medications = db.relationship("Medication", backref="patient", cascade="all, delete-orphan", lazy="dynamic")
     prescriptions = db.relationship("Prescription", backref="patient", cascade="all, delete-orphan", lazy="dynamic")
+    doctor_consents = db.relationship("DoctorPatientConsent", backref="patient", cascade="all, delete-orphan", lazy="dynamic")
 
     def to_dict(self, mask_pii=False):
         """Serialize patient with optional PII de-identification."""

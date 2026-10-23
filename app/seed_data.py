@@ -77,10 +77,10 @@ def create_sample_prescription_image(output_path: str):
     img.save(output_path, "PNG")
 
 
-from app.models import db, User, Patient, CanonicalMarker, MarkerAlias, LabReport, TestResult, Medication, Prescription
+from app.models import db, User, Patient, Doctor, DoctorPatientConsent, CanonicalMarker, MarkerAlias, LabReport, TestResult, Medication, Prescription
 
 def seed_demo_patient(upload_folder: str) -> Patient:
-    """Creates a complete realistic demo patient and default admin user."""
+    """Creates a complete realistic demo patient, doctor, and default admin user."""
     seed_canonical_catalog()
 
     # Seed Admin User if not present
@@ -91,8 +91,32 @@ def seed_demo_patient(upload_folder: str) -> Patient:
         db.session.add(admin_user)
         db.session.commit()
 
+    # Seed Doctor User & Profile if not present
+    doc_user = User.query.filter_by(email="doctor@chronolab.com").first()
+    if not doc_user:
+        doc_user = User(email="doctor@chronolab.com", role="doctor")
+        doc_user.set_password("Doctor@123")
+        db.session.add(doc_user)
+        db.session.flush()
+
+        doctor = Doctor(
+            user_id=doc_user.id,
+            doctor_id="DOC-2026-401",
+            full_name="Dr. Arvind Sharma, MD",
+            specialty="Internal Medicine & Diabetology",
+            registration_number="MCI-74921",
+            hospital_affiliation="Apollo Clinical Hospital"
+        )
+        db.session.add(doctor)
+        db.session.commit()
+
     patient = Patient.query.filter_by(chrono_id="CHRN-2026-8491").first()
     if patient:
+        # Ensure consent exists
+        doc = Doctor.query.filter_by(doctor_id="DOC-2026-401").first()
+        if doc and not DoctorPatientConsent.query.filter_by(patient_id=patient.id, doctor_id=doc.id).first():
+            db.session.add(DoctorPatientConsent(patient_id=patient.id, doctor_id=doc.id, status="ACTIVE"))
+            db.session.commit()
         return patient
 
     # Seed Patient User Account
@@ -290,6 +314,10 @@ def seed_demo_patient(upload_folder: str) -> Patient:
                 velocity_delta_per_year=velocity,
                 is_adverse_drift=is_adv
             ))
+
+    doc = Doctor.query.filter_by(doctor_id="DOC-2026-401").first()
+    if doc and not DoctorPatientConsent.query.filter_by(patient_id=patient.id, doctor_id=doc.id).first():
+        db.session.add(DoctorPatientConsent(patient_id=patient.id, doctor_id=doc.id, status="ACTIVE"))
 
     db.session.commit()
     return patient

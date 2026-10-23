@@ -57,7 +57,13 @@
                         Home
                     </a>
                     <a href="{{ url_for('dashboard') }}" class="px-3 py-1.5 rounded-lg transition hover:text-slate-900 {% if request.endpoint == 'dashboard' %}bg-white text-slate-900 shadow-sm border border-slate-200/80 font-bold{% endif %}">
-                        Dashboard
+                        👤 Patient
+                    </a>
+                    <a href="{{ url_for('doctor_dashboard') }}" class="px-3 py-1.5 rounded-lg transition hover:text-sky-900 {% if request.endpoint == 'doctor_dashboard' %}bg-white text-sky-800 shadow-sm border border-slate-200/80 font-bold{% endif %}">
+                        🩺 Doctor
+                    </a>
+                    <a href="{{ url_for('admin_page') }}" class="px-3 py-1.5 rounded-lg transition hover:text-purple-900 {% if request.endpoint == 'admin_page' %}bg-white text-purple-800 shadow-sm border border-slate-200/80 font-bold{% endif %}">
+                        🛡️ Admin
                     </a>
                     <a href="{{ url_for('upload_page') }}" class="px-3 py-1.5 rounded-lg transition hover:text-slate-900 {% if request.endpoint == 'upload_page' %}bg-white text-slate-900 shadow-sm border border-slate-200/80 font-bold{% endif %}">
                         Upload
@@ -65,15 +71,17 @@
                     <a href="{{ url_for('about_page') }}" class="px-3 py-1.5 rounded-lg transition hover:text-slate-900 {% if request.endpoint == 'about_page' %}bg-white text-slate-900 shadow-sm border border-slate-200/80 font-bold{% endif %}">
                         About
                     </a>
-                    <a href="{{ url_for('admin_page') }}" class="px-3 py-1.5 rounded-lg transition hover:text-slate-900 {% if request.endpoint == 'admin_page' %}bg-white text-purple-700 shadow-sm border border-slate-200/80 font-bold{% endif %}">
-                        Admin
-                    </a>
                 </nav>
 
                 <!-- Right Actions -->
                 <div class="flex items-center space-x-3">
                     {% if session.get('user_id') %}
-                        <span class="text-xs text-slate-500 font-mono hidden sm:inline">{{ session.get('user_email', '') }}</span>
+                        <div class="hidden sm:flex flex-col text-right">
+                            <span class="text-[11px] font-bold text-slate-800">{{ session.get('user_email', '') }}</span>
+                            <span class="text-[9px] uppercase font-mono font-bold {% if session.get('user_role') == 'doctor' %}text-sky-600{% elif session.get('user_role') == 'admin' %}text-purple-600{% else %}text-emerald-600{% endif %}">
+                                Role: {{ session.get('user_role', 'patient') }}
+                            </span>
+                        </div>
                         <a href="{{ url_for('logout_action') }}" class="text-xs text-slate-600 hover:text-slate-900 font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition">
                             Logout
                         </a>
@@ -89,7 +97,15 @@
                     <!-- Subtle ID chip -->
                     <div class="hidden sm:flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <span>{{ session.get('chrono_id', 'CHRN-2026-8491') }}</span>
+                        <span>
+                            {% if session.get('user_role') == 'doctor' %}
+                                {{ session.get('doctor_id', 'DOC-2026-401') }}
+                            {% elif session.get('user_role') == 'admin' %}
+                                ADMIN
+                            {% else %}
+                                {{ session.get('chrono_id', 'CHRN-2026-8491') }}
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
 

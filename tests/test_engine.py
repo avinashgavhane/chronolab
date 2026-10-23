@@ -45,12 +45,52 @@ def test_healthz_endpoint(client):
     assert data["service"] == "ChronoLab Engine"
 
 
-def test_dashboard_renders(client):
-    """Verifies dashboard loads with patient demographics and triage cards."""
+def test_landing_page(client):
+    """Verifies that the high-end landing page loads with brand overview."""
     response = client.get("/")
     assert response.status_code == 200
     assert b"ChronoLab" in response.data
+
+
+def test_dashboard_renders(client):
+    """Verifies dashboard loads with patient demographics and triage cards."""
+    response = client.get("/dashboard")
+    assert response.status_code == 200
+    assert b"ChronoLab" in response.data
     assert b"Longitudinal Velocity Alerts" in response.data
+    assert b"Doctor Access &amp; Privacy Consent" in response.data
+
+
+def test_doctor_portal_requires_clearance(client):
+    """Verifies that unauthenticated users cannot access the doctor portal directly."""
+    response = client.get("/doctor", follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Sign In" in response.data
+
+
+def test_doctor_portal_authenticated(client):
+    """Verifies that doctor session loads the CDSS OPD clinical cockpit."""
+    with client.session_transaction() as sess:
+        sess["user_role"] = "doctor"
+        sess["user_email"] = "doctor@chronolab.com"
+        sess["doctor_id"] = "DOC-2026-401"
+    
+    response = client.get("/doctor")
+    assert response.status_code == 200
+    assert b"Clinical Decision Support System" in response.data
+    assert b"Dr. Arvind Sharma" in response.data
+
+
+def test_admin_portal_authenticated(client):
+    """Verifies that admin session loads telemetry and role management."""
+    with client.session_transaction() as sess:
+        sess["user_role"] = "admin"
+        sess["user_email"] = "admin@chronolab.com"
+    
+    response = client.get("/admin")
+    assert response.status_code == 200
+    assert b"System Administrator Console" in response.data
+    assert b"User Access &amp; Role Management" in response.data
 
 
 def test_pdf_export_pii_masked(client):

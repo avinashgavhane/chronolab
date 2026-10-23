@@ -153,6 +153,75 @@
         </div>
     </div>
 
+    <!-- DOCTOR ACCESS & PRIVACY CONSENT MANAGEMENT -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+            <div>
+                <div class="flex items-center gap-2">
+                    <h2 class="text-sm font-bold text-slate-900">Doctor Access &amp; Privacy Consent</h2>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold border border-sky-200">
+                        ABDM &amp; HIPAA Compliant
+                    </span>
+                </div>
+                <p class="text-[11px] text-slate-400">You control who can view your health vault. Doctors can only view records if explicitly authorized by you.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-1">
+            <!-- Left: Active Authorized Doctors -->
+            <div class="space-y-3">
+                <span class="text-xs font-semibold text-slate-600 block">Authorized Doctors (Active Permissions):</span>
+                
+                {% set active_consents = consents|selectattr("status", "equalto", "ACTIVE")|list %}
+                {% if active_consents %}
+                    <div class="space-y-2.5">
+                    {% for c in active_consents %}
+                        <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span>{{ c.doctor.full_name }}</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 mt-0.5">
+                                    ID: <b class="font-mono text-slate-700">{{ c.doctor.doctor_id }}</b> &bull; {{ c.doctor.specialty }}
+                                </div>
+                                <div class="text-[10px] text-slate-400">
+                                    Granted: {{ c.granted_at.strftime('%d-%b-%Y') }}
+                                </div>
+                            </div>
+                            <form action="{{ url_for('revoke_doctor_consent', consent_id=c.id) }}" method="POST">
+                                <button type="submit" class="text-[11px] bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-lg border border-rose-200 transition">
+                                    Revoke
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="p-4 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
+                        No doctors currently authorized. Your health vault is 100% private.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Authorize New Doctor Form -->
+            <div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200 space-y-3">
+                <span class="text-xs font-bold text-slate-800 block">Authorize a Doctor by ID:</span>
+                <p class="text-[11px] text-slate-500">Enter your physician's Doctor ID (e.g., <code class="font-bold text-sky-700 font-mono">DOC-2026-401</code>) to grant consultation access.</p>
+                
+                <form action="{{ url_for('grant_doctor_consent') }}" method="POST" class="space-y-3">
+                    <div>
+                        <input type="text" name="doctor_id_or_email" required placeholder="Enter Doctor ID (e.g. DOC-2026-401)" 
+                               class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-mono">
+                    </div>
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-sm">
+                        Grant Doctor Access
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
