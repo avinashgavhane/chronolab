@@ -3,135 +3,124 @@
 {% block title %}Upload Diagnostic Records | ChronoLab{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-8">
+<div class="max-w-3xl mx-auto space-y-8">
 
-    <div>
-        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Ingest Diagnostic Documents</h1>
-        <p class="text-sm text-slate-500 mt-1">Upload digital lab test report PDFs or doctor prescription photos to extract and normalize your historical health records.</p>
+    <!-- Clean Header -->
+    <div class="space-y-1">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Upload Health Records</h1>
+        <p class="text-xs text-slate-500">Add digital PDF lab reports or snap photos of paper test results to update your longitudinal history.</p>
     </div>
 
+    <!-- CLEAN TWO-PANEL UPLOAD GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <!-- 1. Lab Report Ingestion Card (PDF, Scanned Photo, or Camera) -->
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div>
-                <div class="flex items-center space-x-3 mb-4">
-                    <span class="p-2.5 bg-brand-50 text-brand-600 rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </span>
-                    <div>
-                        <h2 class="text-base font-bold text-slate-900">Lab Report (PDF or Photo)</h2>
-                        <p class="text-xs text-slate-400">PDF, JPG, PNG, or Live Camera Capture</p>
+        <!-- 1. Lab Report Ingestion -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-base border border-sky-100">
+                    📄
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">Lab Test Report</h2>
+                    <p class="text-[11px] text-slate-400">PDF, JPG, PNG or Camera capture</p>
+                </div>
+            </div>
+
+            <form action="{{ url_for('upload_lab_report') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Select File from Device</label>
+                    <input type="file" id="lab_file_input" name="report_file" accept=".pdf,image/*" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50/50">
+                </div>
+
+                <div class="relative flex items-center justify-center">
+                    <div class="border-t border-slate-100 w-full"></div>
+                    <span class="bg-white px-2 text-[10px] uppercase font-bold text-slate-300 tracking-wider">or</span>
+                    <div class="border-t border-slate-100 w-full"></div>
+                </div>
+
+                <div>
+                    <input type="file" name="camera_photo" accept="image/*" capture="environment" id="camera_input" class="hidden" onchange="handleCameraPhoto(this)">
+                    <button type="button" onclick="document.getElementById('camera_input').click()" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold py-2.5 rounded-xl border border-slate-200 transition flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>Take Photo with Camera</span>
+                    </button>
+                    <div id="camera_preview_badge" class="hidden mt-2 p-2 bg-emerald-50 text-emerald-800 text-[11px] font-semibold rounded-lg flex justify-between items-center border border-emerald-100">
+                        <span>Photo ready</span>
+                        <button type="button" onclick="clearCameraPhoto()" class="font-bold text-emerald-700">&times;</button>
                     </div>
                 </div>
 
-                <form action="{{ url_for('upload_lab_report') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                    <!-- Method 1: Choose from device -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Select File from Device (PDF or Image)</label>
-                        <input type="file" id="lab_file_input" name="report_file" accept=".pdf,image/png,image/jpeg,image/webp" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer border border-slate-200 rounded-xl p-1">
-                    </div>
-
-                    <!-- Method 2: Live Camera Snapshot -->
-                    <div class="pt-2 border-t border-slate-100">
-                        <label class="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
-                            <span>Or Take a Photo with Camera</span>
-                            <span class="text-[10px] text-slate-400">Webcam / Mobile Camera</span>
-                        </label>
-                        <div class="flex space-x-2">
-                            <input type="file" name="camera_photo" accept="image/*" capture="environment" id="camera_input" class="hidden" onchange="handleCameraPhoto(this)">
-                            <button type="button" onclick="document.getElementById('camera_input').click()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 rounded-xl transition flex items-center justify-center space-x-1.5 border border-slate-200">
-                                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                <span>Snap with Camera</span>
-                            </button>
-                        </div>
-                        <div id="camera_preview_badge" class="hidden mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] font-semibold flex items-center justify-between">
-                            <span>Photo captured from camera ready</span>
-                            <button type="button" onclick="clearCameraPhoto()" class="text-emerald-600 hover:text-emerald-900 font-bold">&times;</button>
-                        </div>
-                    </div>
-
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 space-y-1">
-                        <p class="font-semibold text-slate-700">Multi-Format Processing:</p>
-                        <p>&bull; Handles digital vector PDFs from large hospital chains</p>
-                        <p>&bull; Converts paper report photos/scans into normalized diagnostic data</p>
-                        <p>&bull; Automatically resolves units & calculates annual velocity ($dV/dt$)</p>
-                    </div>
-
-                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">
-                        Parse & Normalize Report
-                    </button>
-                </form>
-            </div>
+                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-sm">
+                    Parse and Normalize Report
+                </button>
+            </form>
         </div>
 
-        <!-- 2. Prescription OCR & Snippet Fallback Card -->
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div>
-                <div class="flex items-center space-x-3 mb-4">
-                    <span class="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </span>
-                    <div>
-                        <h2 class="text-base font-bold text-slate-900">Doctor Prescription (Image)</h2>
-                        <p class="text-xs text-slate-400">Confidence-Gated Snippet Fallback</p>
-                    </div>
+        <!-- 2. Prescription Ingestion -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-base border border-amber-100">
+                    ✍️
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">Doctor Prescription</h2>
+                    <p class="text-[11px] text-slate-400">Confidence-Gated Snippet Fallback</p>
+                </div>
+            </div>
+
+            <form action="{{ url_for('upload_prescription') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">Select Prescription Image</label>
+                    <input type="file" name="rx_image" accept="image/*" required class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50/50">
                 </div>
 
-                <form action="{{ url_for('upload_prescription') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Select Prescription Photo</label>
-                        <input type="file" name="rx_image" accept="image/*" required class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-800 hover:file:bg-amber-100 cursor-pointer border border-slate-200 rounded-xl p-1">
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">OCR Confidence Simulation</label>
+                    <select name="simulated_confidence" class="w-full text-xs border border-slate-200 rounded-xl p-2.5 bg-white text-slate-700">
+                        <option value="78.0">78% (Trigger Handwriting Snippet Crop)</option>
+                        <option value="98.5">98.5% (High Confidence - Structured Notes)</option>
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Simulated OCR Confidence (%)</label>
-                        <select name="simulated_confidence" class="w-full text-xs border border-slate-200 rounded-xl p-2 bg-white">
-                            <option value="78.0">78% (Trigger Snippet Crop Fallback - Ambiguous Handwriting)</option>
-                            <option value="98.5">98.5% (High Confidence - Extract Structured Text)</option>
-                        </select>
-                    </div>
+                <div class="text-[11px] text-slate-400 leading-snug">
+                    If handwriting is ambiguous, the engine crops the original handwriting image into your report rather than guessing medication doses.
+                </div>
 
-                    <div class="p-3 bg-amber-50/50 rounded-xl border border-amber-100 text-[11px] text-amber-900 space-y-1">
-                        <p class="font-semibold text-amber-950">Zero-Hallucination Fallback Architecture:</p>
-                        <p>&bull; Confidence &ge; 95%: Converts to structured text notes</p>
-                        <p>&bull; Confidence &lt; 95%: Automatically crops the authentic handwriting snippet into the final summary PDF</p>
-                    </div>
-
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">
-                        Process Prescription
-                    </button>
-                </form>
-            </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-xs transition shadow-sm">
+                    Process Prescription
+                </button>
+            </form>
         </div>
 
     </div>
 
-    <!-- 3. Add Medication (Intervention Overlay) Card -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-        <h2 class="text-base font-bold text-slate-900 mb-1">Log a New Medication (Clinical Intervention)</h2>
-        <p class="text-xs text-slate-400 mb-4">Adding a medication places a vertical intervention line across your multi-year lab charts to measure before vs. after efficacy.</p>
+    <!-- 3. Clean Intervention Logging Form -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div>
+            <h2 class="text-sm font-bold text-slate-900">Log Medication (Intervention Timeline)</h2>
+            <p class="text-[11px] text-slate-400">Adds an intervention marker on your multi-year graphs to measure before vs. after response.</p>
+        </div>
 
-        <form action="{{ url_for('add_medication') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <form action="{{ url_for('add_medication') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Drug Name</label>
-                <input type="text" name="drug_name" placeholder="e.g. Metformin" required class="w-full text-xs border border-slate-200 rounded-xl p-2.5">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Drug Name</label>
+                <input type="text" name="drug_name" placeholder="e.g. Metformin" required class="w-full text-xs border border-slate-200 rounded-xl p-2 bg-slate-50/50">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Dosage</label>
-                <input type="text" name="dosage" placeholder="e.g. 500mg" required class="w-full text-xs border border-slate-200 rounded-xl p-2.5">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Dosage</label>
+                <input type="text" name="dosage" placeholder="e.g. 500mg" required class="w-full text-xs border border-slate-200 rounded-xl p-2 bg-slate-50/50">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Frequency</label>
-                <input type="text" name="frequency" placeholder="e.g. Once daily - Dinner" required class="w-full text-xs border border-slate-200 rounded-xl p-2.5">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Frequency</label>
+                <input type="text" name="frequency" placeholder="e.g. Once daily" required class="w-full text-xs border border-slate-200 rounded-xl p-2 bg-slate-50/50">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Start Date</label>
-                <input type="date" name="start_date" required class="w-full text-xs border border-slate-200 rounded-xl p-2.5">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Start Date</label>
+                <input type="date" name="start_date" required class="w-full text-xs border border-slate-200 rounded-xl p-2 bg-slate-50/50">
             </div>
-            <div class="sm:col-span-4">
-                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition shadow-sm">
-                    Log Medication & Plot Intervention Line
+            <div class="sm:col-span-4 pt-1">
+                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2 rounded-xl text-xs transition">
+                    Save Medication Marker
                 </button>
             </div>
         </form>
@@ -147,9 +136,8 @@
             const file = input.files[0];
             const badge = document.getElementById('camera_preview_badge');
             badge.classList.remove('hidden');
-            badge.querySelector('span').innerText = `Camera photo ready: ${file.name || 'Snapshot.jpg'}`;
+            badge.querySelector('span').innerText = `Camera photo captured: ${file.name || 'Snapshot.jpg'}`;
 
-            // Transfer to main report_file input if possible
             const fileInput = document.getElementById('lab_file_input');
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
@@ -158,13 +146,9 @@
     }
 
     function clearCameraPhoto() {
-        const camInput = document.getElementById('camera_input');
-        const fileInput = document.getElementById('lab_file_input');
-        const badge = document.getElementById('camera_preview_badge');
-        camInput.value = '';
-        fileInput.value = '';
-        badge.classList.add('hidden');
+        document.getElementById('camera_input').value = '';
+        document.getElementById('lab_file_input').value = '';
+        document.getElementById('camera_preview_badge').classList.add('hidden');
     }
 </script>
 {% endblock %}
-

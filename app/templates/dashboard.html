@@ -5,221 +5,151 @@
 {% block content %}
 <div class="space-y-8">
 
-    <!-- 1. INTENT-DRIVEN ONBOARDING TRIAGE BANNER (User MCQ Flow) -->
-    <div class="bg-gradient-to-r from-brand-900 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div class="relative z-10 max-w-3xl">
-            <div class="inline-flex items-center space-x-2 bg-brand-500/20 text-brand-300 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
-                <span>Active Triage Navigator</span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome, {{ patient.full_name }}.</h1>
-            <p class="mt-2 text-slate-300 text-sm sm:text-base leading-relaxed">
-                What would you like to review in your diagnostic history today? Select an objective below to tailor your clinical view:
+    <!-- USER WELCOME & CLEAN QUICK ACTIONS -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Patient Health Vault</div>
+            <h1 class="text-xl font-bold text-slate-900 mt-0.5">{{ patient.full_name }}</h1>
+            <p class="text-xs text-slate-500 mt-1">
+                ChronoID: <span class="font-mono font-semibold text-slate-700">{{ patient.chrono_id }}</span> &bull; Age: {{ 48 }} &bull; Sex: {{ patient.biological_sex }}
             </p>
+        </div>
 
-            <!-- 4 Interactive Triage Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
-                <!-- Option A -->
-                <a href="#physician-brief-section" class="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 transition text-left group block">
-                    <div class="text-brand-400 text-lg mb-1 group-hover:scale-110 transition-transform">🩺</div>
-                    <div class="text-xs font-bold text-white uppercase tracking-wider">Prepare for Doctor</div>
-                    <div class="text-[11px] text-slate-300 mt-1">1-Page PDF, questions to ask, & PII privacy masking</div>
-                </a>
-
-                <!-- Option B -->
-                <a href="#medication-impact-section" class="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 transition text-left group block">
-                    <div class="text-emerald-400 text-lg mb-1 group-hover:scale-110 transition-transform">💊</div>
-                    <div class="text-xs font-bold text-white uppercase tracking-wider">Medication Check</div>
-                    <div class="text-[11px] text-slate-300 mt-1">Before vs. After curves since starting Statin / Metformin</div>
-                </a>
-
-                <!-- Option C -->
-                <a href="#drift-alert-section" class="bg-white/10 hover:bg-white/15 p-4 rounded-xl border border-white/10 transition text-left group block">
-                    <div class="text-amber-400 text-lg mb-1 group-hover:scale-110 transition-transform">📉</div>
-                    <div class="text-xs font-bold text-white uppercase tracking-wider">Silent Health Drifts</div>
-                    <div class="text-[11px] text-slate-300 mt-1">Annual drift velocities (dV/dt) approaching limits</div>
-                </a>
-
-                <!-- Option D -->
-                <a href="{{ url_for('upload_page') }}" class="bg-brand-600/80 hover:bg-brand-600 p-4 rounded-xl border border-brand-400/30 transition text-left group block">
-                    <div class="text-white text-lg mb-1 group-hover:scale-110 transition-transform">📤</div>
-                    <div class="text-xs font-bold text-white uppercase tracking-wider">Upload New PDF</div>
-                    <div class="text-[11px] text-brand-100 mt-1">Parse new lab reports or prescription photos</div>
-                </a>
-            </div>
+        <div class="flex items-center space-x-2.5">
+            <a href="{{ url_for('upload_page') }}" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm">
+                + Upload Report
+            </a>
+            <a href="{{ url_for('export_brief_pdf') }}" class="bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-semibold px-3.5 py-2 rounded-xl border border-sky-200 transition">
+                Export Brief PDF
+            </a>
         </div>
     </div>
 
-    <!-- 2. SILENT ADVERSE DRIFT & DERIVED CLINICAL RATIOS ROW -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="drift-alert-section">
+    <!-- VELOCITY ALERTS & CLINICAL RATIOS (CLEAN TWO-COLUMN LAYOUT) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="drift-alert-section">
         
-        <!-- Left 2 Cols: Adverse Drift Alerts -->
-        <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2">
-                    <span class="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    </span>
-                    <div>
-                        <h2 class="text-base font-bold text-slate-900">Longitudinal Velocity Alerts</h2>
-                        <p class="text-xs text-slate-500">Detects steady year-over-year drift before crossing into lab "abnormal" thresholds</p>
-                    </div>
+        <!-- Left: Velocity Alerts -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">Longitudinal Velocity Alerts</h2>
+                    <p class="text-[11px] text-slate-400">Steady year-over-year rate of change (dV/dt)</p>
                 </div>
-                <span class="text-xs font-semibold px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full">
-                    {{ adverse_drifts|length }} Active Flags
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                    {{ adverse_drifts|length }} Flags
                 </span>
             </div>
 
             {% if adverse_drifts %}
-                <div class="space-y-3">
+                <div class="space-y-2.5">
                 {% for drift in adverse_drifts %}
-                    <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 flex items-center justify-between gap-3">
                         <div>
-                            <div class="flex items-center space-x-2">
-                                <span class="font-bold text-slate-900 text-sm">{{ drift.canonical_name }}</span>
-                                <span class="text-xs px-2 py-0.5 rounded bg-white font-mono text-slate-600 border border-slate-200">{{ drift.normalized_unit }}</span>
+                            <div class="text-xs font-bold text-slate-900">{{ drift.canonical_name }}</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">
+                                Current: <b class="text-slate-800 font-mono">{{ drift.normalized_value }} {{ drift.normalized_unit }}</b> &bull; Drift: <b class="text-amber-800 font-mono">+{{ drift.velocity_delta_per_year }}/yr</b>
                             </div>
-                            <p class="text-xs text-slate-600 mt-1">
-                                Latest Value: <b class="text-slate-900">{{ drift.normalized_value }}</b> &bull; Annual Velocity: <b class="text-amber-700">{{ drift.velocity_delta_per_year }} / yr</b>
-                            </p>
                         </div>
-                        <div class="text-left sm:text-right">
-                            <span class="inline-block text-[11px] font-bold text-amber-700 uppercase bg-amber-100/80 px-2 py-1 rounded">Pre-Diabetic Trajectory</span>
-                        </div>
+                        <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-md uppercase tracking-wider flex-shrink-0">
+                            Pre-Diabetic Drift
+                        </span>
                     </div>
                 {% endfor %}
                 </div>
             {% else %}
-                <div class="p-8 text-center text-slate-400 text-sm">
-                    No active adverse drifts detected. All monitored biomarkers are stable.
+                <div class="py-8 text-center text-xs text-slate-400">
+                    All monitored biomarker trajectories are currently stable.
                 </div>
             {% endif %}
         </div>
 
-        <!-- Right 1 Col: Derived Clinical Ratios (Hidden Biomarkers) -->
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div>
-                <div class="flex items-center space-x-2 mb-4">
-                    <span class="p-2 bg-brand-50 text-brand-600 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    </span>
-                    <div>
-                        <h2 class="text-base font-bold text-slate-900">Derived Clinical Ratios</h2>
-                        <p class="text-xs text-slate-500">Cross-marker synthesis labs don't calculate</p>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                {% for key, ratio in derived_ratios.items() %}
-                    <div class="p-3.5 rounded-xl border border-slate-100 bg-slate-50">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-semibold text-slate-700">{{ ratio.name }}</span>
-                            <span class="text-xs font-bold px-2 py-0.5 rounded {% if ratio.status == 'OPTIMAL' or ratio.status == 'NORMAL' or ratio.status == 'FAVORABLE' %}bg-emerald-100 text-emerald-800{% else %}bg-amber-100 text-amber-800{% endif %}">
-                                {{ ratio.value }}
-                            </span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 mt-1 leading-snug">{{ ratio.insight }}</p>
-                    </div>
-                {% endfor %}
+        <!-- Right: Derived Clinical Ratios -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">Derived Clinical Ratios</h2>
+                    <p class="text-[11px] text-slate-400">Physiological markers calculated across tests</p>
                 </div>
             </div>
 
-            <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
-                Calculated automatically from your most recent lipid and metabolic test values.
+            <div class="space-y-2.5">
+            {% for key, ratio in derived_ratios.items() %}
+                <div class="p-3.5 rounded-xl border border-slate-100 bg-slate-50/70 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-slate-800">{{ ratio.name }}</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5 leading-snug">{{ ratio.insight }}</div>
+                    </div>
+                    <div class="text-right flex-shrink-0 ml-3">
+                        <span class="text-sm font-mono font-bold text-slate-900">{{ ratio.value }}</span>
+                        <span class="block text-[10px] font-bold uppercase tracking-wider {% if ratio.status in ['OPTIMAL', 'NORMAL', 'FAVORABLE'] %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                            {{ ratio.status }}
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- 3. LONGITUDINAL INTERACTIVE CHARTS & MEDICATION TIMELINE (Before vs. After) -->
-    <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm" id="medication-impact-section">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
+    <!-- MULTI-YEAR LONGITUDINAL CHARTS & PANEL TABS -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-5" id="medication-impact-section">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
             <div>
-                <h2 class="text-lg font-bold text-slate-900">Longitudinal Trajectory Charts (Multi-Year)</h2>
-                <p class="text-xs text-slate-500">Select a physiological panel to visualize historical trends across different labs</p>
+                <h2 class="text-sm font-bold text-slate-900">Longitudinal Trajectory Charts</h2>
+                <p class="text-[11px] text-slate-400">Unified historical progression across Quest, Dr Lal, Metropolis, and Apollo</p>
             </div>
             
-            <!-- Panel Selector Buttons -->
-            <div class="inline-flex p-1 bg-slate-100 rounded-xl space-x-1">
-                <button onclick="switchPanel('METABOLIC')" id="btn-METABOLIC" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition">Metabolic</button>
-                <button onclick="switchPanel('LIPID')" id="btn-LIPID" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Lipid</button>
-                <button onclick="switchPanel('RENAL')" id="btn-RENAL" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Renal</button>
-                <button onclick="switchPanel('HEPATIC')" id="btn-HEPATIC" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Hepatic</button>
+            <!-- Segmented Panel Filter -->
+            <div class="inline-flex p-1 bg-slate-100 rounded-xl space-x-1 text-xs">
+                <button onclick="switchPanel('METABOLIC')" id="btn-METABOLIC" class="px-3 py-1 font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition">Metabolic</button>
+                <button onclick="switchPanel('LIPID')" id="btn-LIPID" class="px-3 py-1 font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Lipid</button>
+                <button onclick="switchPanel('RENAL')" id="btn-RENAL" class="px-3 py-1 font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Renal</button>
+                <button onclick="switchPanel('HEPATIC')" id="btn-HEPATIC" class="px-3 py-1 font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Hepatic</button>
             </div>
         </div>
 
-        <!-- Active Medications Legend (Intervention Overlay) -->
-        <div class="mt-4 bg-brand-50/60 p-3.5 rounded-xl border border-brand-100 flex flex-wrap items-center justify-between text-xs gap-2">
-            <div class="flex items-center space-x-2 text-brand-900 font-medium">
-                <span class="w-3 h-0.5 bg-brand-600 border border-brand-600"></span>
-                <span>Active Interventions (Plotted as Vertical Marker):</span>
-                {% for med in medications %}
-                    <span class="bg-white px-2 py-0.5 rounded border border-brand-200 font-bold text-brand-700">
-                        {{ med.drug_name }} ({{ med.dosage }}) &bull; Started {{ med.start_date }}
-                    </span>
-                {% endfor %}
-            </div>
-            <span class="text-slate-500 text-[11px]">Notice how LDL dropped significantly after Atorvastatin was introduced</span>
+        <!-- Intervention Notes -->
+        <div class="flex items-center space-x-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <span><b>Active Medication Timeline:</b></span>
+            {% for med in medications %}
+                <span class="text-slate-700 font-semibold bg-white px-2 py-0.5 rounded border border-slate-200">{{ med.drug_name }} {{ med.dosage }} (Started {{ med.start_date }})</span>
+            {% endfor %}
         </div>
 
-        <!-- Canvas Container -->
-        <div class="mt-6 h-80 w-full relative">
+        <!-- Chart Canvas -->
+        <div class="h-72 w-full relative">
             <canvas id="trajectoryChart"></canvas>
         </div>
     </div>
 
-    <!-- 4. ACTIONABLE PHYSICIAN BRIEF & QUESTIONS TO ASK DOCTOR -->
-    <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm" id="physician-brief-section">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 gap-4">
+    <!-- PREPARE FOR DOCTOR VISIT & SCRIPT QUESTIONS -->
+    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-3">
             <div>
-                <h2 class="text-lg font-bold text-slate-900">Doctor Consultation Preparation</h2>
-                <p class="text-xs text-slate-500">1-Page export for your 7-minute visit, plus questions to ask your physician</p>
+                <h2 class="text-sm font-bold text-slate-900">Doctor Consultation Brief & Questions</h2>
+                <p class="text-[11px] text-slate-400">Bring this 1-page summary to your next appointment</p>
             </div>
 
-            <!-- PDF Export Form with PII Toggle -->
+            <!-- PDF Download form with PII toggle -->
             <form action="{{ url_for('export_brief_pdf') }}" method="GET" class="flex items-center space-x-3">
-                <label class="flex items-center space-x-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
-                    <input type="checkbox" name="mask_pii" value="true" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4" checked>
-                    <span>Mask Name / PII (Privacy Mode)</span>
+                <label class="flex items-center space-x-1.5 text-xs text-slate-600 cursor-pointer select-none">
+                    <input type="checkbox" name="mask_pii" value="true" class="rounded text-sky-600 focus:ring-sky-500 w-3.5 h-3.5" checked>
+                    <span>Mask Name (Privacy Mode)</span>
                 </label>
-                <button type="submit" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-700 transition flex items-center space-x-2 shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    <span>Download 1-Page PDF</span>
+                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition shadow-sm">
+                    Download 1-Page PDF
                 </button>
             </form>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <!-- Left: Recommended Questions -->
-            <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Questions for Your Doctor (Socratic Flow)</h3>
-                <div class="space-y-3">
-                    {% for q in doctor_questions %}
-                        <div class="p-3.5 rounded-xl border border-blue-100 bg-blue-50/50 text-xs text-slate-800 leading-relaxed flex items-start space-x-2.5">
-                            <span class="font-bold text-blue-600 text-sm leading-none mt-0.5">&bull;</span>
-                            <span>{{ q }}</span>
-                        </div>
-                    {% endfor %}
+        <div class="space-y-2">
+            {% for q in doctor_questions %}
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 flex items-start space-x-2.5">
+                    <span class="font-bold text-sky-600">&bull;</span>
+                    <span>{{ q }}</span>
                 </div>
-            </div>
-
-            <!-- Right: Prescription Snippet Fallback Preview -->
-            <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Prescription Artifact (Handwriting Fallback)</h3>
-                {% if prescription and prescription.is_handwriting_fallback and prescription.snippet_image_path %}
-                    <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">OCR Low-Confidence Fallback Active</span>
-                            <span class="text-[11px] text-slate-400">Dr. Arvind Sharma (12-Jan-2024)</span>
-                        </div>
-                        <img src="{{ url_for('static', filename=prescription.snippet_image_path) }}" alt="Handwriting Snippet" class="rounded border border-slate-200 w-full object-cover">
-                        <p class="text-[10px] text-slate-400 mt-2 italic">Preserving original clinical handwriting artifact to eliminate AI dosage hallucination.</p>
-                    </div>
-                {% else %}
-                    <div class="border border-slate-200 rounded-xl p-6 text-center text-xs text-slate-400 bg-slate-50">
-                        No ambiguous handwriting snippets attached.
-                    </div>
-                {% endif %}
-            </div>
+            {% endfor %}
         </div>
     </div>
 
@@ -228,7 +158,6 @@
 
 {% block scripts %}
 <script>
-    // Pass JSON data from Flask to Chart.js
     const chartData = {{ chart_json|safe }};
     let myChart = null;
 
@@ -251,33 +180,15 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: {
-                            font: { size: 11, weight: 'bold' },
-                            usePointStyle: true,
-                        }
-                    },
-                    tooltip: {
-                        padding: 10,
-                        bodyFont: { size: 12 },
+                        labels: { font: { size: 11, family: '"Plus Jakarta Sans"' }, boxWidth: 12 }
                     }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: { color: '#f1f5f9' },
-                        ticks: { font: { size: 11 } }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 11 } }
-                    }
+                    y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                 }
             }
         });
@@ -287,15 +198,14 @@
         ['METABOLIC', 'LIPID', 'RENAL', 'HEPATIC'].forEach(p => {
             const btn = document.getElementById('btn-' + p);
             if (p === panelName) {
-                btn.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition';
+                btn.className = 'px-3 py-1 font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition';
             } else {
-                btn.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition';
+                btn.className = 'px-3 py-1 font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition';
             }
         });
         renderChart(panelName);
     }
 
-    // Default to Metabolic Panel on load
     document.addEventListener('DOMContentLoaded', () => {
         renderChart('METABOLIC');
     });
