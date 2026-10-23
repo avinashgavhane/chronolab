@@ -1,0 +1,36 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Database
+*.db
+*.sqlite3
+instance/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Uploads & User generated content (preserve directory structure but ignore files)
+uploads/reports/*
+!uploads/reports/.gitkeep
+uploads/snippets/*
+!uploads/snippets/.gitkeep
+uploads/*.png
+uploads/*.jpg
+uploads/*.pdf
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini

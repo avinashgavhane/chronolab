@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}About ChronoLab | The Architecture of Diagnostic Truth{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-12">
+
+    <!-- Header -->
+    <div class="text-center space-y-3">
+        <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200 uppercase tracking-wider">
+            Clinical Systems Engineering
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">About ChronoLab</h1>
+        <p class="text-sm text-slate-500 max-w-xl mx-auto">
+            Why we built an open-source, deterministic diagnostic intelligence engine to solve fragmented patient records.
+        </p>
+    </div>
+
+    <!-- The Problem Narrative -->
+    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 text-sm text-slate-700 leading-relaxed">
+        <h2 class="text-xl font-bold text-slate-900 tracking-tight">The Core Dilemma: Healthcare's "Static Snapshot Trap"</h2>
+        
+        <p>
+            When a patient is tested for a routine check-up or manages a chronic illness (such as Type 2 Diabetes, Hypertension, or Thyroid conditions), their diagnostic journey is split across multiple independent laboratories over years:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span class="font-bold text-slate-900 block text-xs uppercase tracking-wider text-rose-600">The Laboratory Reality</span>
+                <p class="text-xs text-slate-600">Every laboratory utilizes different nomenclature (e.g. <i>FBS</i> vs <i>Glucose Fasting</i>), conflicting reference intervals, and divergent units ($nmol/L$ vs $ng/mL$).</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span class="font-bold text-slate-900 block text-xs uppercase tracking-wider text-amber-600">The 7-Minute Consultation</span>
+                <p class="text-xs text-slate-600">A consulting physician has approximately 5 to 7 minutes per patient. No doctor has the time to open 15 PDF attachments or spreadsheets to calculate rates of change.</p>
+            </div>
+        </div>
+
+        <p>
+            The consequence is devastating: <b>sub-clinical disease velocity is invisible</b>. A patient's fasting blood glucose drifting upward at $+7\text{ mg/dL}$ per year is labeled "Normal" each year because it sits just under the arbitrary $100\text{ mg/dL}$ cutoff—until the year it crosses into pre-diabetes.
+        </p>
+    </div>
+
+    <!-- The 4 Engineering Pillars -->
+    <div class="space-y-4">
+        <h2 class="text-xl font-bold text-slate-900 tracking-tight">Our 4 Engineering Pillars</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                <div class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                    <span class="text-brand-600 font-mono">01.</span>
+                    <span>Deterministic Math Over Generative AI</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    We refuse to use non-deterministic LLMs for calculating units or reading numbers. Conversion relies on exact molecular weight formulas (e.g. Glucose molar mass $180.16\text{ g/mol}$).
+                </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                <div class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                    <span class="text-brand-600 font-mono">02.</span>
+                    <span>Confidence-Gated Handwriting Fallback</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    When OCR confidence for doctor handwriting is under $95\%$, we never hallucinate drug dosages. The system crops and attaches the authentic original handwriting image directly into the report.
+                </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                <div class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                    <span class="text-brand-600 font-mono">03.</span>
+                    <span>Relative Range Position ($RRP\%$)</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Standardizes values across conflicting laboratory equipment reference intervals to prevent false alarms between different hospital chains.
+                </p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+                <div class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                    <span class="text-brand-600 font-mono">04.</span>
+                    <span>Privacy Safe Harbor & DPDP Compliance</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    One-click PII masking replaces patient names and contact data with pseudonymous Universal Health IDs (`ChronoID`) for anonymous second opinions.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to action -->
+    <div class="text-center pt-4">
+        <a href="{{ url_for('dashboard') }}" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-8 py-3.5 rounded-2xl text-xs sm:text-sm transition shadow-md shadow-brand-500/20">
+            Explore the Clinical Engine
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}ChronoLab | Longitudinal Diagnostic Intelligence & Biomarker Velocity{% endblock %}
+
+{% block content %}
+<div class="space-y-16">
+
+    <!-- HERO SECTION -->
+    <section class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-slate-900 via-brand-950 to-slate-900 text-white p-8 sm:p-14 border border-slate-800 shadow-2xl">
+        <div class="relative z-10 max-w-3xl space-y-6">
+            <div class="inline-flex items-center space-x-2 bg-brand-500/20 text-brand-300 px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border border-brand-500/30">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Solving Healthcare's "Static Snapshot Trap"</span>
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                Your Health is a <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-brand-400 to-emerald-400">Trajectory</span>, Not Just a Snapshot.
+            </h1>
+
+            <p class="text-slate-300 text-sm sm:text-lg leading-relaxed font-normal">
+                Over 10 years, patients accumulate blood tests across multiple diagnostic labs with conflicting units, ranges, and test names. 
+                ChronoLab normalizes your multi-lab medical history, detects quiet year-over-year disease drift, and generates a 1-page summary for your 7-minute doctor visits.
+            </p>
+
+            <div class="flex flex-wrap gap-4 pt-2">
+                <a href="{{ url_for('register_page') }}" class="bg-gradient-to-r from-brand-600 to-sky-600 hover:from-brand-500 hover:to-sky-500 text-white font-bold px-6 py-3.5 rounded-2xl text-sm transition shadow-lg shadow-brand-500/30 flex items-center space-x-2">
+                    <span>Create Your Health Vault</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+                <a href="{{ url_for('login_page') }}" class="bg-white/10 hover:bg-white/15 text-white font-bold px-6 py-3.5 rounded-2xl text-sm transition border border-white/15">
+                    Patient / Admin Login
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold px-5 py-3.5 rounded-2xl text-sm transition border border-emerald-500/30">
+                    Live Interactive Demo &rarr;
+                </a>
+            </div>
+
+            <!-- Trust Pills -->
+            <div class="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-400 border-t border-slate-800/80">
+                <span class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span>100% Deterministic Math</span>
+                </span>
+                <span class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span>DPDP & HIPAA De-Identification</span>
+                </span>
+                <span class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Zero AI Dosage Hallucination</span>
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CORE CLINICAL PILLARS (3 Cards) -->
+    <section class="space-y-6">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Engineered for Clinical Truth</h2>
+            <p class="text-sm text-slate-500">How ChronoLab bridges the gap between chaotic laboratory PDFs and physician workflows.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xl">
+                    ⚗️
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Deterministic Unit Normalizer</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Automatically converts international units (e.g. Vitamin D $nmol/L \rightarrow ng/mL$, Glucose $mmol/L \rightarrow mg/dL$) using molecular weight equations so 5-year data points align accurately.
+                </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl">
+                    📈
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Annual Velocity Drift ($dV/dt$)</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Detects steady annual increases (e.g. $+6.7\text{ mg/dL/yr}$ glucose drift) before test results cross into laboratory "abnormal" red flags, catching pre-diabetes early.
+                </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                    📄
+                </div>
+                <h3 class="text-base font-bold text-slate-900">1-Page Doctor Consultation Brief</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Compiles multi-year matrices, derived ratios (TG/HDL, De Ritis AST/ALT), and targeted patient questions into a printable 1-page PDF tailored for 7-minute doctor visits.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- LIVE DEMONSTRATION CALLOUT -->
+    <section class="bg-gradient-to-r from-sky-50 to-brand-50 p-8 sm:p-10 rounded-3xl border border-brand-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="space-y-2">
+            <span class="text-[11px] font-bold text-brand-700 uppercase tracking-wider bg-brand-100/80 px-2.5 py-1 rounded-full">Interactive Patient Sandbox</span>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900">Test the Live Diagnostic Vault</h3>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-xl">
+                Experience the patient view pre-loaded with Rajesh Kumar's 4-year diagnostic trajectory across Quest, Dr Lal, Metropolis, and Apollo Diagnostics.
+            </p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3.5 rounded-2xl text-xs sm:text-sm transition flex-shrink-0 shadow-sm">
+            Open Interactive Dashboard
+        </a>
+    </section>
+
+</div>
+{% endblock %}

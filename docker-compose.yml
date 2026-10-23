@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: chronolab_app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=enterprise-chronolab-production-key-2026
+      - DATABASE_URL=postgresql://chronouser:chronopass@db:5432/chronolab_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    restart: always
+
+  db:
+    image: postgres:15-alpine
+    container_name: chronolab_postgres
+    environment:
+      - POSTGRES_USER=chronouser
+      - POSTGRES_PASSWORD=chronopass
+      - POSTGRES_DB=chronolab_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chronouser -d chronolab_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+volumes:
+  postgres_data:
+  uploads_data:
