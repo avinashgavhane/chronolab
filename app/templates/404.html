@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) | ChronoLab{% endblock %}
+{% block meta_description %}The requested clinical record or page could not be located on ChronoLab. Return to the dashboard or search your health vault.{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto py-12 text-center space-y-6">
+    <div class="w-20 h-20 rounded-3xl bg-sky-50 text-sky-600 flex items-center justify-center font-black text-3xl mx-auto shadow-inner border border-sky-100">
+        404
+    </div>
+
+    <div class="space-y-2">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Record Not Found</h1>
+        <p class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
+            The page or clinical diagnostic record you are attempting to access does not exist, has expired, or requires patient authorization.
+        </p>
+    </div>
+
+    <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-left text-xs space-y-2">
+        <span class="font-bold text-slate-800 block">Recommended Actions:</span>
+        <ul class="space-y-1.5 text-slate-600 list-disc list-inside">
+            <li>Return to your personal <a href="{{ url_for('dashboard') }}" class="font-bold text-sky-600 hover:underline">Patient Dashboard</a></li>
+            <li>If you are a physician, open the <a href="{{ url_for('doctor_dashboard') }}" class="font-bold text-sky-600 hover:underline">Doctor OPD Portal</a></li>
+            <li>Need medical assistance? Call <a href="tel:+18005550199" class="font-bold text-sky-600 hover:underline">+1 (800) 555-0199</a> or email <a href="mailto:support@chronolab.health" class="font-bold text-sky-600 hover:underline">support@chronolab.health</a></li>
+        </ul>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <a href="{{ url_for('home_page') }}" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow-sm">
+            &larr; Back to Home
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow-sm">
+            Launch Health Vault
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -2,9 +2,15 @@
 <html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ChronoLab | Clinical Diagnostic Intelligence{% endblock %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>{% block title %}ChronoLab | Longitudinal Diagnostic Intelligence & Biomarker Velocity{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}ChronoLab is a non-generative, clinical-grade diagnostic intelligence platform computing annual biomarker disease velocity to detect subclinical health risks years before traditional thresholds.{% endblock %}">
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="alternate icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- TYPOGRAPHY & TAILWIND -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,25 +39,31 @@
         }
     </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col antialiased">
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col antialiased overflow-x-hidden w-full">
 
-    <!-- CLEAN, MODERN MINIMAL NAVBAR -->
-    <header class="bg-white border-b border-slate-200/80 sticky top-0 z-50">
+    <!-- MODERN RESPONSIVE NAVBAR -->
+    <header class="bg-white border-b border-slate-200/80 sticky top-0 z-50 w-full">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between h-16">
 
-                <!-- Brand -->
-                <a href="{{ url_for('home_page') }}" class="flex items-center space-x-2.5 group">
+                <!-- Clickable Logo -->
+                <a href="{{ url_for('home_page') }}" class="flex items-center space-x-2.5 group focus:outline-none focus:ring-2 focus:ring-sky-500 rounded-xl px-1">
                     <div class="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center text-white font-bold text-sm shadow-sm group-hover:bg-sky-500 transition">
                         CL
                     </div>
-                    <span class="font-bold text-base tracking-tight text-slate-900">Chrono<span class="text-sky-600">Lab</span></span>
+                    <span class="font-bold text-base tracking-tight text-slate-900 group-hover:text-sky-700 transition">Chrono<span class="text-sky-600">Lab</span></span>
                 </a>
 
-                <!-- Segmented Control Center Nav -->
+                <!-- Desktop Segmented Control Center Nav -->
                 <nav class="hidden md:flex items-center space-x-1 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60 text-xs font-semibold text-slate-600">
                     <a href="{{ url_for('home_page') }}" class="px-3 py-1.5 rounded-lg transition hover:text-slate-900 {% if request.endpoint == 'home_page' %}bg-white text-slate-900 shadow-sm border border-slate-200/80 font-bold{% endif %}">
                         Home
@@ -73,10 +85,10 @@
                     </a>
                 </nav>
 
-                <!-- Right Actions -->
-                <div class="flex items-center space-x-3">
+                <!-- Desktop Right Actions -->
+                <div class="hidden sm:flex items-center space-x-3">
                     {% if session.get('user_id') %}
-                        <div class="hidden sm:flex flex-col text-right">
+                        <div class="flex flex-col text-right">
                             <span class="text-[11px] font-bold text-slate-800">{{ session.get('user_email', '') }}</span>
                             <span class="text-[9px] uppercase font-mono font-bold {% if session.get('user_role') == 'doctor' %}text-sky-600{% elif session.get('user_role') == 'admin' %}text-purple-600{% else %}text-emerald-600{% endif %}">
                                 Role: {{ session.get('user_role', 'patient') }}
@@ -95,7 +107,7 @@
                     {% endif %}
 
                     <!-- Subtle ID chip -->
-                    <div class="hidden sm:flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+                    <div class="flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         <span>
                             {% if session.get('user_role') == 'doctor' %}
@@ -109,18 +121,99 @@
                     </div>
                 </div>
 
+                <!-- Mobile Hamburger Button -->
+                <div class="flex items-center md:hidden space-x-2">
+                    <button type="button" id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-none" aria-label="Toggle Navigation Menu">
+                        <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200/80 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
+            <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+                <a href="{{ url_for('home_page') }}" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 border border-slate-100 {% if request.endpoint == 'home_page' %}bg-sky-50 text-sky-800 font-bold border-sky-200{% endif %}">
+                    🏠 Home
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 border border-slate-100 {% if request.endpoint == 'dashboard' %}bg-sky-50 text-sky-800 font-bold border-sky-200{% endif %}">
+                    👤 Patient Vault
+                </a>
+                <a href="{{ url_for('doctor_dashboard') }}" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 border border-slate-100 {% if request.endpoint == 'doctor_dashboard' %}bg-sky-50 text-sky-800 font-bold border-sky-200{% endif %}">
+                    🩺 Doctor OPD
+                </a>
+                <a href="{{ url_for('admin_page') }}" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 border border-slate-100 {% if request.endpoint == 'admin_page' %}bg-purple-50 text-purple-800 font-bold border-purple-200{% endif %}">
+                    🛡️ Admin Console
+                </a>
+                <a href="{{ url_for('upload_page') }}" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 border border-slate-100 {% if request.endpoint == 'upload_page' %}bg-sky-50 text-sky-800 font-bold border-sky-200{% endif %}">
+                    📄 Upload Report
+                </a>
+                <a href="{{ url_for('about_page') }}" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 border border-slate-100 {% if request.endpoint == 'about_page' %}bg-sky-50 text-sky-800 font-bold border-sky-200{% endif %}">
+                    ℹ️ About Tech
+                </a>
+            </div>
+
+            <!-- Mobile Auth & Identification -->
+            <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                {% if session.get('user_id') %}
+                    <div class="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                        <div>
+                            <span class="font-bold text-slate-800 block">{{ session.get('user_email', '') }}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">Role: {{ session.get('user_role', 'patient') }}</span>
+                        </div>
+                        <a href="{{ url_for('logout_action') }}" class="text-xs text-rose-600 font-bold px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200">
+                            Logout
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <a href="{{ url_for('login_page') }}" class="text-center font-bold text-slate-700 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50">
+                            Sign In
+                        </a>
+                        <a href="{{ url_for('register_page') }}" class="text-center font-bold text-white bg-slate-900 py-2.5 rounded-xl hover:bg-slate-800">
+                            Register
+                        </a>
+                    </div>
+                {% endif %}
+                <div class="text-[11px] font-mono text-slate-500 text-center pt-1">
+                    Active ID: <b class="text-sky-700">{{ session.get('chrono_id', session.get('doctor_id', 'CHRN-2026-8491')) }}</b>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- CONTENT WRAPPER -->
-    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 overflow-x-hidden">
+        <!-- GLOBAL FLASH MESSAGES: SUCCESS, ERROR, WARNING -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="mb-6 space-y-2">
                 {% for category, message in messages %}
-                    <div class="p-3.5 rounded-xl border text-xs font-medium flex items-center justify-between {% if category == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% elif category == 'warning' %}bg-amber-50 text-amber-800 border-amber-200{% else %}bg-rose-50 text-rose-800 border-rose-200{% endif %}">
-                        <span>{{ message }}</span>
+                    <div class="p-3.5 rounded-xl border text-xs font-medium flex items-center justify-between transition-all duration-300
+                        {% if category in ['success', 'ok'] %}
+                            bg-emerald-50 text-emerald-800 border-emerald-200
+                        {% elif category in ['error', 'danger'] %}
+                            bg-rose-50 text-rose-800 border-rose-200
+                        {% elif category in ['warning', 'alert'] %}
+                            bg-amber-50 text-amber-800 border-amber-200
+                        {% else %}
+                            bg-sky-50 text-sky-800 border-sky-200
+                        {% endif %}">
+                        <div class="flex items-center space-x-2">
+                            {% if category in ['success', 'ok'] %}
+                                <span class="font-bold text-emerald-600 text-sm">✓</span>
+                            {% elif category in ['error', 'danger'] %}
+                                <span class="font-bold text-rose-600 text-sm">✕</span>
+                            {% elif category in ['warning', 'alert'] %}
+                                <span class="font-bold text-amber-600 text-sm">⚠</span>
+                            {% else %}
+                                <span class="font-bold text-sky-600 text-sm">ℹ</span>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 font-bold text-base leading-none">&times;</button>
                     </div>
                 {% endfor %}
                 </div>
@@ -130,20 +223,106 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- MINIMAL CLEAN FOOTER -->
-    <footer class="border-t border-slate-200/80 bg-white py-6 text-xs text-slate-400 mt-12">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div>
-                <span class="font-semibold text-slate-600">ChronoLab</span> &bull; Longitudinal Biomarker Trajectory Engine
+    <!-- HIGH-QUALITY COMPREHENSIVE FOOTER WITH WORKING LINKS & CONTACT INFO -->
+    <footer class="border-t border-slate-200/80 bg-white py-10 text-xs text-slate-500 mt-12 w-full">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Col 1: Brand & Clinical Philosophy -->
+                <div class="space-y-2">
+                    <a href="{{ url_for('home_page') }}" class="font-bold text-sm text-slate-900 flex items-center space-x-2">
+                        <span class="w-5 h-5 rounded bg-sky-600 text-white flex items-center justify-center text-[10px]">CL</span>
+                        <span>Chrono<span class="text-sky-600">Lab</span></span>
+                    </a>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        Deterministic mathematical engine converting fragmented pathology test sheets into longitudinal health velocity ($dV/dt$).
+                    </p>
+                </div>
+
+                <!-- Col 2: Navigation Links -->
+                <div class="space-y-2">
+                    <span class="font-bold text-slate-800 block text-xs uppercase tracking-wider">Clinical Portals</span>
+                    <ul class="space-y-1.5 text-[11px]">
+                        <li><a href="{{ url_for('dashboard') }}" class="hover:text-sky-600 transition">👤 Patient Health Vault</a></li>
+                        <li><a href="{{ url_for('doctor_dashboard') }}" class="hover:text-sky-600 transition">🩺 Doctor OPD Cockpit</a></li>
+                        <li><a href="{{ url_for('upload_page') }}" class="hover:text-sky-600 transition">📄 Upload Lab PDF / Scan</a></li>
+                        <li><a href="{{ url_for('admin_page') }}" class="hover:text-sky-600 transition">🛡️ Admin Console</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Medical Engine Resources -->
+                <div class="space-y-2">
+                    <span class="font-bold text-slate-800 block text-xs uppercase tracking-wider">Clinical Resources</span>
+                    <ul class="space-y-1.5 text-[11px]">
+                        <li><a href="{{ url_for('about_page') }}" class="hover:text-sky-600 transition">Architecture &amp; Math Spec</a></li>
+                        <li><a href="{{ url_for('export_brief_pdf', mask_pii='true') }}" class="hover:text-sky-600 transition">Sample 1-Page Physician Brief (PDF)</a></li>
+                        <li><a href="{{ url_for('login_page') }}" class="hover:text-sky-600 transition">Demo Credentials &amp; Login</a></li>
+                        <li><a href="{{ url_for('register_page') }}" class="hover:text-sky-600 transition">Register Universal Health ID</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Clickable Phone & Email Support -->
+                <div class="space-y-2">
+                    <span class="font-bold text-slate-800 block text-xs uppercase tracking-wider">Direct Assistance</span>
+                    <div class="space-y-1.5 text-[11px]">
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Clinical Inquiries &amp; Support:</span>
+                            <a href="mailto:support@chronolab.health" class="font-bold text-sky-600 hover:text-sky-700 hover:underline inline-flex items-center gap-1">
+                                <span>✉</span>
+                                <span>support@chronolab.health</span>
+                            </a>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Toll-Free Patient Helpline:</span>
+                            <a href="tel:+18005550199" class="font-bold text-slate-800 hover:text-sky-600 hover:underline inline-flex items-center gap-1">
+                                <span>📞</span>
+                                <span>+1 (800) 555-0199</span>
+                            </a>
+                        </div>
+                        <div class="text-[10px] text-slate-400 pt-1">
+                            Mon–Sat &bull; 08:00–20:00 IST
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center space-x-4 text-slate-400">
-                <a href="{{ url_for('about_page') }}" class="hover:text-slate-600 transition">About</a>
-                <a href="{{ url_for('export_brief_pdf') }}" class="hover:text-slate-600 transition">Physician Brief PDF</a>
-                <a href="{{ url_for('admin_page') }}" class="hover:text-slate-600 transition">Admin</a>
+
+            <!-- Bottom Sub-Footer with Correct Dynamic Year -->
+            <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-slate-400">
+                <div>
+                    &copy; <span id="current-year">2026</span> ChronoLab Diagnostic Intelligence Inc. All rights reserved.
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('about_page') }}" class="hover:text-slate-600 transition">Privacy Safe Harbor</a>
+                    <span>&bull;</span>
+                    <a href="{{ url_for('about_page') }}" class="hover:text-slate-600 transition">DPDP &amp; HIPAA Standard</a>
+                    <span>&bull;</span>
+                    <span class="text-emerald-600 font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> System Operational
+                    </span>
+                </div>
             </div>
         </div>
     </footer>
 
+    <script>
+        // Automatic Copyright Year Fix
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Responsive Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const hamburger = document.getElementById('hamburger-icon');
+            const close = document.getElementById('close-icon');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                hamburger.classList.add('hidden');
+                close.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+                hamburger.classList.remove('hidden');
+                close.classList.add('hidden');
+            }
+        }
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
