@@ -28,11 +28,13 @@ jobs:
       - name: Execute Automated Regression Test Suite
         env:
           FLASK_ENV: testing
+          PYTHONPATH: .
         run: |
-          pytest -v tests/
+          python -m pytest -v tests/
 
       - name: Verify Health Endpoint Response
         env:
           FLASK_ENV: testing
+          PYTHONPATH: .
         run: |
           python -c "from app import create_app; app = create_app('testing'); client = app.test_client(); resp = client.get('/healthz'); assert resp.status_code == 200; print('HEALTH CHECK PASSED')"

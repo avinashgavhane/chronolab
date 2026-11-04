@@ -10,7 +10,13 @@ Runs automated tests for:
 6. Intent-Driven Dashboard rendering
 """
 
+import os
+import sys
 import pytest
+
+# Ensure project root is in sys.path across all CI runners and environments
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from app import create_app
 from app.models import db, Patient, CanonicalMarker
 from app.normalizer import (
